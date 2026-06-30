@@ -1,0 +1,72 @@
+<Window x:Class="MultipleSliderWpfSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MultipleSliderWpfSample"
+        mc:Ignorable="d"
+        Title="MultiRangeSlider Sample" Height="450" Width="600">
+    <Grid Margin="20">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Multi Range Slider Sample (0 - 30)" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            
+            <!-- The Custom Control -->
+            <local:MultiRangeSlider x:Name="MySlider" 
+                                    Minimum="0" Maximum="30" 
+                                    Value="15" RangeStart="10" RangeEnd="20" 
+                                    Height="30" Margin="0,0,0,20"/>
+            
+            <!-- Value Display -->
+            <Grid Margin="0,0,0,40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="Range Start" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding RangeStart, ElementName=MySlider, StringFormat=N1}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="Value" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Value, ElementName=MySlider, StringFormat=N1}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="Range End" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding RangeEnd, ElementName=MySlider, StringFormat=N1}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Single Slider Section -->
+            <TextBlock Text="Single Slider Sample (0 - 100)" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            
+            <local:SingleSlider x:Name="MySingleSlider"
+                                Minimum="0" Maximum="100"
+                                Value="50"
+                                Height="30" Margin="0,0,0,20"/>
+
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="Value" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Value, ElementName=MySingleSlider, StringFormat=N1}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Single Slider No Fill Section -->
+            <TextBlock Text="Single Slider No Fill Sample (0 - 100)" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,20"/>
+            
+            <local:SingleSliderNoFill x:Name="MySingleSliderNoFill"
+                                Minimum="0" Maximum="100"
+                                Value="50"
+                                Height="30" Margin="0,0,0,20"/>
+
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="Value" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Value, ElementName=MySingleSliderNoFill, StringFormat=N1}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+
+        </StackPanel>
+    </Grid>
+</Window>

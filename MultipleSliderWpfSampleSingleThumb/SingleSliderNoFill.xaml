@@ -1,0 +1,32 @@
+<UserControl x:Class="MultipleSliderWpfSample.SingleSliderNoFill"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="400"
+             x:Name="Root">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="SliderStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid>
+        <!-- Track -->
+        <Border Height="2" Background="#DDDDDD" VerticalAlignment="Center" CornerRadius="1" Margin="24,0"/>
+        
+        <!-- Interactive Layer -->
+        <Canvas x:Name="SliderCanvas" Margin="24,0" Background="Transparent">
+            <!-- No Range Highlight here -->
+            
+            <!-- Label -->
+            <TextBlock x:Name="MainLabel" Text="0" FontSize="10" Foreground="#333333" Canvas.Top="-5"/>
+
+            <!-- Main Thumb (Value) -->
+            <Thumb x:Name="MainThumb" DragDelta="MainThumb_DragDelta" Background="#007ACC" Style="{StaticResource SimpleThumbStyle}" Width="14" Height="14" Canvas.Top="8"/>
+        </Canvas>
+    </Grid>
+</UserControl>

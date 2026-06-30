@@ -1,0 +1,744 @@
+<Window x:Class="MidiBleWpfSample.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:controls="clr-namespace:MidiBleWpfSample.Controls"
+        xmlns:models="clr-namespace:MidiBleWpfSample.Models"
+        xmlns:converters="clr-namespace:MidiBleWpfSample.Converters"
+        xmlns:vm="clr-namespace:MidiBleWpfSample.Sequencer.ViewModels"
+        xmlns:models_base="clr-namespace:MidiBleWpfSample.Sequencer.Models"
+        xmlns:models_config="clr-namespace:MidiBleWpfSample.Sequencer.Models.Configurations"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="CycloneSA+ Step Sequencer" Height="780" Width="400"
+        AllowDrop="True" DragEnter="Window_DragEnter" Drop="Window_Drop">
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="StepRotationDirectionValues"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="models_base:StepRotationDirection"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <converters:BoolToMuteUnmuteTextConverter x:Key="BoolToMuteUnmuteTextConverter"/>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+
+        <Style x:Key="BaseIconStyle" TargetType="Control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="3"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+        </Style>
+
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource BaseIconStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#C0C0C0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style x:Key="IconToggleButton" TargetType="ToggleButton" BasedOn="{StaticResource BaseIconStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#C9E1F9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Padding="8" Margin="0,0,0,10">
+            <ContentControl Content="{Binding Slots[0]}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate DataType="{x:Type models:BleSlot}">
+                        <StackPanel>
+
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="{Binding SlotName}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedDeviceName}" Foreground="DarkSlateGray" MinHeight="16" 
+                                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </Grid>
+
+                            <Grid Margin="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Speed:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <controls:SingleSliderNoFill Grid.Column="1" Value="{Binding SpeedValue, Mode=TwoWay}" Minimum="10" Maximum="400" StringFormat="F0" Suffix="%" SnapValue="100"/>
+                            </Grid>
+
+                            <Grid Margin="0,-12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Amplitude:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <controls:SingleSliderNoFill Grid.Column="1" Value="{Binding AmplitudeValue, Mode=TwoWay}" Minimum="0.0" Maximum="2.0" StringFormat="P0" SnapValue="1.0"/>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="0,0,0,10" x:Name="MainTabControl" SelectionChanged="MainTabControl_SelectionChanged">
+            
+            <TabItem Header="Sequencer" DataContext="{Binding SequencerViewModel}">
+                <Grid Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="150"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Control Buttons -->
+                    <Grid Grid.Row="0" Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Button Style="{StaticResource IconButton}" Command="{Binding PlayCommand}" ToolTip="Play" Margin="0,0,5,0">
+                                <Path Data="M 4,2 L 4,14 L 12,8 Z" Fill="Black" Stretch="Uniform" Width="12" Height="12"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Command="{Binding StopCommand}" ToolTip="Stop" Margin="0,0,5,0">
+                                <Path Data="M 4.5,4.5 H 11.5 V 11.5 H 4.5 Z" Fill="Black" Stretch="Uniform" Width="11" Height="11"/>
+                            </Button>
+                            <ToggleButton Style="{StaticResource IconToggleButton}" IsChecked="{Binding IsRandomized}" ToolTip="Randomize" Margin="0,0,5,0">
+                                <Path Data="M 3,3 L 8,8 M 8,3 L 3,8 M 10,5 L 13,5 M 3,12 L 8,12 M 10,12 L 13,12" Stroke="Black" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform"/>
+                            </ToggleButton>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button Style="{StaticResource IconButton}" Command="{Binding SavePresetCommand}" ToolTip="Save Preset">
+                                <Path Data="M3,3 H13 V13 H3 Z M4,4 H12 V8 H4 Z M5,9 H11 V12 H5 Z" Fill="Black" Stretch="Uniform" Width="14" Height="14"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Command="{Binding LoadPresetCommand}" ToolTip="Load Preset" Margin="5,0,0,0">
+                                <Path Data="M2,3 L8,3 L10,5 H14 V13 H2 Z" Fill="Black" Stretch="Uniform" Width="14" Height="14"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Vertical" Margin="2,2,5,2" VerticalAlignment="Top">
+                            <Button Content="＋" Command="{Binding AddStepCommand}" FontFamily="Segoe UI Symbol" Padding="3,1" ToolTip="Add new step"/>
+                            <Button Content="－" Command="{Binding RemoveStepCommand}" FontFamily="Segoe UI Symbol" Padding="3,1" Margin="0,5,0,0" ToolTip="Remove selected step"/>
+                            <Button Content="▲" Command="{Binding MoveStepUpCommand}" Padding="3,0" Margin="0,5,0,0" FontSize="8" ToolTip="Move selected step up"/>
+                            <Button Content="▼" Command="{Binding MoveStepDownCommand}" Padding="3,0" FontSize="8" ToolTip="Move selected step down"/>
+                            <Button Command="{Binding DuplicateStepCommand}" Padding="3,1" Margin="0,5,0,0" ToolTip="Duplicate selected step">
+                                <Path Data="M 3,1 H 10 V 11 H 3 Z M 5,3 H 12 V 13 H 5 Z" Fill="Black" Stretch="Uniform" Width="12" Height="12"/>
+                            </Button>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Step List -->
+                            <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="1" Margin="0,0,5,0">
+                                <ListBox ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding PatternName}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                    <Setter Property="Background" Value="LightYellow"/>
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Border>
+                        </Grid>
+                        
+                        <!-- Step Editor -->
+                        <Border Grid.Column="2" BorderBrush="LightGray" BorderThickness="1" Padding="5">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <Grid>
+                                    <!-- Placeholder for when nothing is selected -->
+                                    <TextBlock Text="No step selected." Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedStep}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- The actual editor, which is only visible when a step is selected -->
+                                    <ContentControl Content="{Binding SelectedStep}">
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedStep}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                        <ContentControl.Resources>
+                                            <DataTemplate DataType="{x:Type vm:StepViewModel}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Step Details" FontWeight="Bold" Margin="0,0,0,5"/>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Pattern Selector -->
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Pattern:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                        <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+                                                                  ItemsSource="{Binding AvailablePatternNames}"
+                                                                  SelectedItem="{Binding PatternName}"/>
+
+                                                        <!-- Spacer -->
+                                                        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0,10,0,5"/>
+
+                                                        <!-- Pattern-Specific Configuration -->
+                                                        <ContentControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Content="{Binding Config}" Margin="0,5,0,0">
+                                                            <ContentControl.Resources>
+                                                                <!-- Editor for ConstantPatternConfig -->
+                                                                <DataTemplate DataType="{x:Type models_config:ConstantPatternConfig}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Stroke Pattern Config" FontWeight="SemiBold"/>
+
+                                                                        <!-- Duration -->
+                                                                        <Grid Margin="0,5,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Duration:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="0.1" Maximum="10.0"
+                                                                                                       Value="{Binding DataContext.DurationInSeconds, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding DataContext.MinDurationInSeconds, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding DataContext.MaxDurationInSeconds, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       StringFormat="F1"
+                                                                                                       Suffix="s"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Intensity -->
+                                                                        <Grid Margin="0,-12,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Intensity:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="0" Maximum="100"
+                                                                                                       Value="{Binding DataContext.Intensity, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding DataContext.MinIntensity, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding DataContext.MaxIntensity, RelativeSource={RelativeSource AncestorType=ContentControl}, Mode=TwoWay}"
+                                                                                                       StringFormat="F0"
+                                                                                                       Suffix="%"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Direction -->
+                                                                        <Grid Margin="0,2,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Direction:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <ComboBox Grid.Column="1"
+                                                                                      ItemsSource="{Binding Source={StaticResource StepRotationDirectionValues}}"
+                                                                                      SelectedItem="{Binding RotationDirection, Mode=TwoWay}"/>
+                                                                        </Grid>
+
+                                                                        <!-- Randomness Section -->
+                                                                        <CheckBox x:Name="EnableRandomnessCheck" Content="Enable Randomness" IsChecked="{Binding IsRandomnessEnabled}" Margin="0,8,0,0"/>
+
+                                                                        <Border BorderBrush="LightGray" BorderThickness="1" Padding="5,10,5,5" IsEnabled="{Binding IsChecked, ElementName=EnableRandomnessCheck}">
+                                                                            <StackPanel>
+                                                                                <!-- Intensity Slider -->
+                                                                                <Grid Margin="0,-10,0,0">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="80"/>
+                                                                                        <ColumnDefinition Width="*"/>
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <TextBlock Grid.Column="0" Text="Intensity:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                                    <controls:SingleSliderNoFill Grid.Column="1" 
+                                                                                                                 Value="{Binding RandomnessIntensity, Mode=TwoWay}" 
+                                                                                                                 Minimum="0.0" Maximum="1.0" 
+                                                                                                                 StringFormat="P0"/>
+                                                                                </Grid>
+                                                                                <!-- Stiffness Slider -->
+                                                                                <Grid Margin="0,-12,0,-8">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="80"/>
+                                                                                        <ColumnDefinition Width="*"/>
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <TextBlock Grid.Column="0" Text="Stability:" VerticalAlignment="Center" Margin="0,0,-5,0"/>
+                                                                                    <controls:SingleSliderNoFill Grid.Column="1" 
+                                                                                                                 Value="{Binding SpringStiffness, Mode=TwoWay}" 
+                                                                                                                 Minimum="0.0" Maximum="1.0" 
+                                                                                                                 StringFormat="P0"/>
+                                                                                </Grid>
+                                                                            </StackPanel>
+                                                                        </Border>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+
+                                                                <!-- Editor for MidiFilePatternConfig -->
+                                                                <DataTemplate DataType="{x:Type models_config:MidiFilePatternConfig}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Pattern Config" FontWeight="SemiBold"/>
+
+                                                                        <!-- File Path -->
+                                                                        <Grid Margin="0,5,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                                <ColumnDefinition Width="Auto"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="File:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <TextBox Grid.Column="1" Text="{Binding DataContext.MidiFilePath, RelativeSource={RelativeSource AncestorType=ContentControl}}" IsReadOnly="True" VerticalAlignment="Center" ToolTip="{Binding DataContext.MidiFilePath, RelativeSource={RelativeSource AncestorType=ContentControl}}"/>
+                                                                            <Button Grid.Column="2" Content="..." Command="{Binding DataContext.SelectMidiFileCommand, RelativeSource={RelativeSource AncestorType=ContentControl}}" Margin="5,0,0,0" Padding="5,1"/>
+                                                                        </Grid>
+
+                                                                        <!-- Speed Slider -->
+                                                                        <Grid Margin="0,5,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Speed:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <controls:SingleSliderNoFill Grid.Column="1" Value="{Binding Speed, Mode=TwoWay}" Minimum="10" Maximum="400" StringFormat="F0" Suffix="%"/>
+                                                                        </Grid>
+                                                                        
+                                                                        <!-- Amplitude Slider -->
+                                                                        <Grid Margin="0,-12,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Amplitude:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <controls:SingleSliderNoFill Grid.Column="1" Value="{Binding Amplitude, Mode=TwoWay}" Minimum="0.0" Maximum="2.0" StringFormat="P0"/>
+                                                                        </Grid>
+
+                                                                        <!-- Invert Checkbox -->
+                                                                        <CheckBox Content="Invert Direction" IsChecked="{Binding Invert}" Margin="0,10,0,5"/>
+
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+
+                                                                <!-- Editor for StrokePatternConfig -->
+                                                                <DataTemplate DataType="{x:Type models_config:StrokePatternConfig}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Stroke Pattern Config" FontWeight="SemiBold"/>
+
+                                                                        <!-- StartValue Slider -->
+                                                                        <Grid Margin="0,5,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Start Value:" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Motion start value (64-127)"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="64" Maximum="127"
+                                                                                                       Value="{Binding StartValue, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinStartValue, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxStartValue, Mode=TwoWay}"
+                                                                                                       StringFormat="F0"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Baseline Slider -->
+                                                                        <Grid Margin="0,-12,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Baseline:" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Motion end value (64-127)"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="64" Maximum="127"
+                                                                                                       Value="{Binding Baseline, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinBaseline, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxBaseline, Mode=TwoWay}"
+                                                                                                       StringFormat="F0"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Duration Slider -->
+                                                                        <Grid Margin="0,-12,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Duration of a single stroke"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="0.10" Maximum="5.0"
+                                                                                                       Value="{Binding Duration, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinDuration, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxDuration, Mode=TwoWay}"
+                                                                                                       StringFormat="F2"
+                                                                                                       Suffix="s"
+                                                                                                       TickFrequency="0.01"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Hold Duration Slider -->
+                                                                        <Grid Margin="0,-12,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Hold:" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Time to hold at the end value"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Maximum="1.0"
+                                                                                                       Value="{Binding HoldDuration, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinHoldDuration, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxHoldDuration, Mode=TwoWay}"
+                                                                                                       StringFormat="F2"
+                                                                                                       Suffix="s"
+                                                                                                       VerticalAlignment="Center">
+                                                                                <controls:MultiRangeSlider.Style>
+                                                                                    <Style TargetType="controls:MultiRangeSlider">
+                                                                                        <Setter Property="Minimum" Value="0.0"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding WaveformType}" Value="Square">
+                                                                                                <Setter Property="Minimum" Value="0.05"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </controls:MultiRangeSlider.Style>
+                                                                            </controls:MultiRangeSlider>
+                                                                        </Grid>
+
+                                                                        <!-- RotationDirection ComboBox -->
+                                                                        <Grid Margin="0,2,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Direction:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <ComboBox Grid.Column="1"
+                                                                                      ItemsSource="{Binding Source={StaticResource StepRotationDirectionValues}}"
+                                                                                      SelectedItem="{Binding RotationDirection, Mode=TwoWay}"/>
+                                                                        </Grid>
+
+                                                                        <!-- WaveformType RadioButtons -->
+                                                                        <Grid Margin="0,8,0,0">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Waveform:" VerticalAlignment="Center"/>
+                                                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,0,5">
+                                                                                <RadioButton Content="Curve" IsChecked="{Binding WaveformType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Curve}" Margin="0,0,10,0"/>
+                                                                                <RadioButton Content="Square" IsChecked="{Binding WaveformType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Square}"/>
+                                                                            </StackPanel>
+                                                                        </Grid>
+
+                                                                        <!-- CurveShape Slider (visible only for Curve waveform) -->
+                                                                        <Grid Margin="0,-6,0,0">
+                                                                            <Grid.Style>
+                                                                                <Style TargetType="Grid">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding WaveformType}" Value="Curve">
+                                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </Grid.Style>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Curve Shape:" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="0%: Concave, 50%: Linear, 100%: Convex"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1"
+                                                                                                       Minimum="0.0" Maximum="1.0"
+                                                                                                       Value="{Binding CurveShape, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinCurveShape, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxCurveShape, Mode=TwoWay}"
+                                                                                                       StringFormat="P0"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                        <!-- Repetitions Section -->
+                                                                        <Grid Margin="0,-12,0,5">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="80"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="Repetitions:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                            <controls:MultiRangeSlider Grid.Column="1" Minimum="0" Maximum="30"
+                                                                                                       Value="{Binding Repetitions, Mode=TwoWay}"
+                                                                                                       RangeStart="{Binding MinRepetitions, Mode=TwoWay}"
+                                                                                                       RangeEnd="{Binding MaxRepetitions, Mode=TwoWay}"
+                                                                                                       StringFormat="F0"
+                                                                                                       VerticalAlignment="Center"/>
+                                                                        </Grid>
+
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+
+                                                                <!-- Fallback Template -->
+                                                                <DataTemplate DataType="{x:Type models_base:PatternConfiguration}">
+                                                                    <TextBlock Text="This pattern has no specific configuration." FontStyle="Italic" Foreground="Gray"/>
+                                                                </DataTemplate>
+                                                            </ContentControl.Resources>
+                                                        </ContentControl>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ContentControl.Resources>
+                                    </ContentControl>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    
+                    <!-- User Presets -->
+                    <GroupBox Grid.Row="2" Header="User Presets" Margin="0,10,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="2,0,2,5">
+                                <TextBlock Text="Playback:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <RadioButton Content="Sequential" GroupName="PresetPlaybackMode" IsChecked="{Binding CurrentPlaybackMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Sequential}" Margin="0,0,10,0"/>
+                                <RadioButton Content="Repeat" GroupName="PresetPlaybackMode" IsChecked="{Binding CurrentPlaybackMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Repeat}" Margin="0,0,10,0"/>
+                                <RadioButton Content="Random" GroupName="PresetPlaybackMode" IsChecked="{Binding CurrentPlaybackMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Random}"/>
+                            </StackPanel>
+                            
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Toolbar for Presets -->
+                                    <StackPanel Grid.Column="0" Orientation="Vertical" Margin="2,2,5,2" VerticalAlignment="Top">
+                                        <Button Content="＋" Command="{Binding AddPresetCommand}" FontFamily="Segoe UI Symbol" Padding="3,1" ToolTip="Add new preset"/>
+                                        <Button Content="－" Command="{Binding RemovePresetCommand}" FontFamily="Segoe UI Symbol" Padding="3,1" Margin="0,5,0,0" ToolTip="Remove selected preset"/>
+                                        <Button Content="▲" Command="{Binding MovePresetUpCommand}" Padding="3,0" Margin="0,5,0,0" FontSize="8" ToolTip="Move selected preset up"/>
+                                        <Button Content="▼" Command="{Binding MovePresetDownCommand}" Padding="3,0" FontSize="8" ToolTip="Move selected preset down"/>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Column="1" ItemsSource="{Binding UserPresets}" SelectedItem="{Binding SelectedPreset}" Margin="2">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                        <Setter Property="Background" Value="LightYellow"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Loop Checkbox -->
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelectedForLoop, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" ToolTip="Include in loop playback"/>
+
+                                                    <!-- Preset Name -->
+                                                    <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="5,0" VerticalAlignment="Center" BorderThickness="0" Background="Transparent"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Config">
+                <Border BorderBrush="Gray" BorderThickness="1" Padding="8">
+                    <StackPanel Margin="10" Orientation="Vertical">
+                        <!-- MIDI vs Sequencer Priority -->
+                        <GroupBox Header="MIDI vs Sequencer Priority" Margin="0,0,0,10">
+                            <StackPanel>
+                                <RadioButton x:Name="rbSequencerPriority" Content="Sequencer overrides MIDI" 
+                                             GroupName="MidiPriority" IsChecked="True" 
+                                             Checked="MidiPriority_Checked"/>
+                                <RadioButton x:Name="rbMidiPriority" Content="MIDI playback prioritized" 
+                                             GroupName="MidiPriority"
+                                             Checked="MidiPriority_Checked"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- MIDI Delay -->
+                        <GroupBox Header="MIDI Delay" Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal">
+                                <Slider x:Name="sldMidiDelay" Minimum="-2000" Maximum="2000" Width="150" Value="-250" TickFrequency="50" IsSnapToTickEnabled="True" ValueChanged="sldMidiDelay_ValueChanged"/>
+                                <TextBlock x:Name="txtMidiDelay" Text="-250ms" VerticalAlignment="Center" Margin="5,0,0,0" MinWidth="35"/>
+                            </StackPanel>
+                        </GroupBox>
+                        
+                        <!-- Interrupt Rotation -->
+                        <GroupBox Header="Interrupt Rotation" Margin="0,0,0,10">
+                            <StackPanel>
+                                <!-- Duration -->
+                                <Grid Margin="0,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" x:Name="sldInterruptDuration" Minimum="0.1" Maximum="10.0" Value="2.0" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="sldInterruptDuration_ValueChanged"/>
+                                    <TextBlock Grid.Column="2" x:Name="txtInterruptDuration" Text="2.0s" VerticalAlignment="Center" Margin="5,0,0,0" MinWidth="35"/>
+                                </Grid>
+                                <!-- Intensity -->
+                                <Grid Margin="0,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Intensity:" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" x:Name="sldInterruptIntensity" Minimum="0" Maximum="100" Value="100" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="sldInterruptIntensity_ValueChanged"/>
+                                    <TextBlock Grid.Column="2" x:Name="txtInterruptIntensity" Text="100%" VerticalAlignment="Center" Margin="5,0,0,0" MinWidth="35"/>
+                                </Grid>
+                                <!-- Direction -->
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Direction:" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="rbInterruptDirCw" Content="CW" GroupName="InterruptDirection" Checked="InterruptDirection_Checked" Margin="0,0,10,0" ToolTip="Clockwise"/>
+                                        <RadioButton x:Name="rbInterruptDirCcw" Content="CCW" GroupName="InterruptDirection" Checked="InterruptDirection_Checked" Margin="0,0,10,0" ToolTip="Counter-Clockwise"/>
+                                        <RadioButton x:Name="rbInterruptDirFollow" Content="Follow" GroupName="InterruptDirection" IsChecked="True" Checked="InterruptDirection_Checked" ToolTip="Follow Previous Direction"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Interrupt Mode" Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <RadioButton x:Name="rbInterruptModeToggle" Content="Toggle" GroupName="InterruptMode" IsChecked="True" Checked="InterruptMode_Checked" Margin="0,0,10,0" ToolTip="Press to start, press again to stop"/>
+                                <RadioButton x:Name="rbInterruptModeHold" Content="Hold" GroupName="InterruptMode" Checked="InterruptMode_Checked" Margin="0,0,10,0" ToolTip="Hold to run, release to stop"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Other Settings -->
+                        <GroupBox Header="Application Settings" Margin="0,0,0,10">
+                            <StackPanel>
+                                <CheckBox x:Name="chkAlwaysOnTop" Content="Always on Top" Checked="chkAlwaysOnTop_Checked" Unchecked="chkAlwaysOnTop_Unchecked" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,0,10"/>
+                                <Button x:Name="btnSettings" Content="Device Settings" Height="24" Click="OnClickSettings"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="About">
+                <Grid Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="CycloneSA+ Step Sequencer" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Version 0.1.0" Foreground="Gray"/>
+                    </StackPanel>
+                    <TextBox Grid.Row="1" x:Name="txtLog" Margin="0" Background="WhiteSmoke" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" FontFamily="Consolas" FontSize="11" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <Grid Grid.Row="2" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" x:Name="btnPauseResume" Content="{Binding IsGloballyPaused, Converter={StaticResource BoolToMuteUnmuteTextConverter}}" Height="24" Click="PauseResumeButton_Click" Margin="0,0,5,0"/>
+            <Button Grid.Column="1" x:Name="InterruptButton" ToolTip="Interrupt Rotation (CC#64)" Height="24"
+                    PreviewMouseDown="InterruptButton_PreviewMouseDown" PreviewMouseUp="InterruptButton_PreviewMouseUp" Margin="5,0,0,0" Content="Interrupt" />
+        </Grid>
+    </Grid>
+</Window>

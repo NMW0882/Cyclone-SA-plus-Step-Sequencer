@@ -1,0 +1,72 @@
+﻿<Window x:Class="MidiBleWpfSample.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:MidiBleWpfSample.Models"
+        xmlns:converters="clr-namespace:MidiBleWpfSample.Converters"
+        Title="Settings" Height="500" Width="600"
+        Closed="Window_Closed">
+
+    <Window.Resources>
+        <converters:BoolToToggleConnectTextConverter x:Key="BoolToToggleConnectTextConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock Text="MIDI Input Device" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ComboBox x:Name="cmbMidiDevices" Width="200" HorizontalAlignment="Left"
+                      SelectionChanged="cmbMidiDevices_SelectionChanged"/>
+
+            <TextBlock Text="CC Number" FontWeight="Bold" Margin="0,10,0,5"/>
+            <ComboBox x:Name="cmbCCSelect" Width="80" HorizontalAlignment="Left"
+                      SelectionChanged="cmbCCSelect_SelectionChanged">
+                <ComboBoxItem Content="CC#1"/>
+                <ComboBoxItem Content="CC#10" IsSelected="True"/>
+            </ComboBox>
+
+            <TextBlock Text="Player Controller" FontWeight="Bold" Margin="0,10,0,5"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <RadioButton x:Name="rbMPC" Content="MPC" GroupName="PlayerController"
+                             Checked="rbPlayerController_Checked" Margin="0,0,10,0"/>
+                <RadioButton x:Name="rbNone" Content="None" GroupName="PlayerController"
+                             Checked="rbPlayerController_Checked"/>
+                <TextBox x:Name="txtPlayerPort" Width="80" Margin="10,0,0,0" Text="13579"
+                         TextChanged="txtPlayerPort_TextChanged"/>
+            </StackPanel>
+
+            <TextBlock Text="BLE Device Slots" FontWeight="Bold" Margin="0,10,0,5"/>
+            <ItemsControl ItemsSource="{Binding Slots}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:BleSlot}">
+                        <Border BorderBrush="Gray" BorderThickness="1" Padding="8" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" Width="55" Margin="0,0,5,0"
+                                          SelectedValue="{Binding MidiChannel}"
+                                          SelectedValuePath="Content">
+                                    <ComboBoxItem Content="1"/>
+                                </ComboBox>
+                                <TextBlock Grid.Column="1" Text="{Binding SlotName}" Width="50"
+                                           VerticalAlignment="Center" Margin="0,0,5,0" FontWeight="Bold"/>
+                                <ComboBox Grid.Column="2" Margin="0,0,5,0"
+                                          ItemsSource="{Binding BleDeviceList}"
+                                          SelectedItem="{Binding SelectedDeviceName}"/>
+                                <Button Grid.Column="3" Width="140" HorizontalAlignment="Right"
+                                        CommandParameter="{Binding}"
+                                        Click="OnClickToggleConnect">
+                                    <Button.Content>
+                                        <Binding Path="IsConnected" Converter="{StaticResource BoolToToggleConnectTextConverter}" />
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</Window>
