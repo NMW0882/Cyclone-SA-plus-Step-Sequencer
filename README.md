@@ -5,6 +5,13 @@ Vorze Cyclone SA+ を Windows の Bluetooth LE でコントロールするプロ
 
 最低限動作するところまで作った未完成のベータ版ですが、機器自体を使わなくなり完成を諦めたので**著作権完全フリー（CC0）** で公開します。改変・再配布等お好きにお使いください。
 
+<p align="center">
+  <a href="https://github.com/NMW0882/Cyclone-SA-plus-Step-Sequencer/releases/latest/download/CycloneSaPlusStepSequencer_v010.zip">
+    <b>🍥Download🍥</b>
+  </a>
+</p>
+
+
 ### 主な機能
 - **オリジナル回転パターン作成**  
   自由にステップを組んでパターンを作成可能。作成したパターンはプリセットとして保存・読み込みできます。
