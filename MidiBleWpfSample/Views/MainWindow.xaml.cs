@@ -247,10 +247,11 @@ namespace MidiBleWpfSample.Views
                 if (IsGloballyPaused || _isInterrupting) return;
                 if (timedEvent.MidiEvent is ControlChangeEvent ccEvent)
                 {
-                    if ((int)ccEvent.Controller == 10)
+                    if ((int)ccEvent.Controller == GlobalMidi.TargetController)
                     {
                         int ccValue = ccEvent.ControllerValue;
                         _lastSentMidiValue = ccValue;
+                        AppendLog($"MIDI File CC#{GlobalMidi.TargetController} Value: {ccValue}");
                         int midiChannel = ccEvent.Channel;
                         foreach (var s in Slots)
                         {
